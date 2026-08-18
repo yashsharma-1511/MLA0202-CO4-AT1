@@ -1,0 +1,60 @@
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+
+image = np.array([
+    [10, 12, 11, 200, 14],
+    [11, 13, 12, 15, 13],
+    [10, 11, 200, 14, 12],
+    [9,  10, 11, 13, 12],
+    [8,  9,  10, 11, 13]
+], dtype=float)
+
+rows, cols = image.shape
+
+G = nx.Graph()
+
+for i in range(rows):
+    for j in range(cols):
+        G.add_node((i, j), value=image[i, j])
+
+for i in range(rows):
+    for j in range(cols):
+        if i + 1 < rows:
+            G.add_edge((i, j), (i + 1, j))
+
+        if j + 1 < cols:
+            G.add_edge((i, j), (i, j + 1))
+
+denoised = image.copy()
+
+for i in range(rows):
+    for j in range(cols):
+        neighbors = list(G.neighbors((i, j)))
+
+        values = [image[x, y] for x, y in neighbors]
+
+        if values:
+            denoised[i, j] = (
+                image[i, j] + np.mean(values)
+            ) / 2
+
+print("Original Image:")
+print(image)
+
+print("\nDenoised Image:")
+print(np.round(denoised, 2))
+
+plt.figure(figsize=(8, 4))
+
+plt.subplot(1, 2, 1)
+plt.imshow(image, cmap="gray")
+plt.title("Original Image")
+plt.axis("off")
+
+plt.subplot(1, 2, 2)
+plt.imshow(denoised, cmap="gray")
+plt.title("Denoised Image")
+plt.axis("off")
+
+plt.show()
